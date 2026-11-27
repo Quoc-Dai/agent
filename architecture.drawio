@@ -1,0 +1,158 @@
+<mxfile host="app.diagrams.net" agent="Antigravity" version="24.0.0">
+  <diagram name="Luồng Hoạt Động - Sales Data AI Agent" id="sales-agent-flow">
+    <mxGraphModel dx="1420" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1480" pageHeight="920" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Title -->
+        <mxCell id="title" value="SƠ ĐỒ KIẾN TRÚC &amp; LUỒNG HOẠT ĐỘNG - SALES DATA AI AGENT" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1;fontColor=#0F172A;" vertex="1" parent="1">
+          <mxGeometry x="340" y="20" width="800" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- User -->
+        <mxCell id="user" value="👤 Người dùng&#xa;(Trình duyệt Web)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F1F5F9;strokeColor=#475569;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="30" y="340" width="150" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- Layer 1: app.py -->
+        <mxCell id="layer_ui" value="🖥️ TẦNG GIAO DIỆN (app.py - Streamlit)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#3B82F6;fontStyle=1;fontSize=13;startSize=32;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="230" y="80" width="330" height="580" as="geometry" />
+        </mxCell>
+        <mxCell id="ui_sidebar" value="🔑 Sidebar: Cấu hình &amp; Dữ liệu&#xa;• Nhập &amp; xác thực Gemini API Key&#xa;• Upload file Excel/CSV mới&#xa;• Nạp file / Tải lại DB / Xóa lịch sử chat" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#60A5FA;align=left;spacingLeft=10;fontSize=12;" vertex="1" parent="layer_ui">
+          <mxGeometry x="20" y="55" width="290" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="ui_hero" value="📊 Hero Banner &amp; KPI Cards&#xa;• load_overview_kpis() (cache TTL 300s)&#xa;• Hiển thị Doanh thu, Giao dịch, Số lượng" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#60A5FA;align=left;spacingLeft=10;fontSize=12;" vertex="1" parent="layer_ui">
+          <mxGeometry x="20" y="170" width="290" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="ui_chat" value="💬 Chat Input &amp; 6 Gợi ý nhanh&#xa;• Kiểm tra api_key_valid&#xa;• Gửi prompt + chat_history tới run_agent()&#xa;• Cập nhật st.status() realtime qua status_cb" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#2563EB;align=left;spacingLeft=10;fontSize=12;fontStyle=1;" vertex="1" parent="layer_ui">
+          <mxGeometry x="20" y="275" width="290" height="105" as="geometry" />
+        </mxCell>
+        <mxCell id="ui_output" value="📤 Hiển thị kết quả &amp; Lưu lịch sử&#xa;• Câu trả lời Markdown + latency badge&#xa;• Expander: Tool Logs JSON&#xa;• render_chart() (Plotly Area / Bar Chart)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#60A5FA;align=left;spacingLeft=10;fontSize=12;" vertex="1" parent="layer_ui">
+          <mxGeometry x="20" y="405" width="290" height="110" as="geometry" />
+        </mxCell>
+
+        <!-- Layer 2: agent.py -->
+        <mxCell id="layer_agent" value="🧠 TẦNG ĐIỀU PHỐI AI (agent.py - Google GenAI SDK)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#F5F3FF;strokeColor=#7C3AED;fontStyle=1;fontSize=13;startSize=32;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="620" y="80" width="380" height="710" as="geometry" />
+        </mxCell>
+        <mxCell id="agent_init" value="⚙️ Khởi tạo run_agent() &amp; Client&#xa;• get_client(): kết nối GEMINI_BASE_URL / Google API&#xa;• Nạp SYSTEM_PROMPT (đơn vị USD, quy tắc)&#xa;• Bọc 5 tools bằng make_logged_tool()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#A78BFA;align=left;spacingLeft=10;fontSize=12;" vertex="1" parent="layer_agent">
+          <mxGeometry x="20" y="55" width="340" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="agent_retry" value="🔄 Vòng lặp Model Fallback &amp; Retry&#xa;• get_models_for_key(): chọn danh sách model ưu tiên&#xa;• Lỗi 503/Timeout: retry 3 lần (5s → 10s → 20s)&#xa;• Hết retry hoặc 404: chuyển model dự phòng&#xa;• Lỗi khác (Key sai/cú pháp): dừng trả lỗi ngay" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EDE9FE;strokeColor=#7C3AED;align=left;spacingLeft=10;fontSize=12;" vertex="1" parent="layer_agent">
+          <mxGeometry x="20" y="175" width="340" height="115" as="geometry" />
+        </mxCell>
+        <mxCell id="agent_gemini" value="✨ Gọi Gemini generate_content()&#xa;• Tắt Auto Function Calling của SDK&#xa;• Vòng lặp tối đa 6 bước (_step in range(6))&#xa;• Trả về function_calls hoặc câu trả lời cuối" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#7C3AED;align=left;spacingLeft=10;fontSize=12;fontStyle=1;" vertex="1" parent="layer_agent">
+          <mxGeometry x="20" y="315" width="340" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="agent_tool_exec" value="🔧 Thực thi Tool &amp; FunctionResponse&#xa;• Gọi hàm trong wrapped_tool_map&#xa;• Ghi tool_logs &amp; trích xuất chart_payload&#xa;• Gửi FunctionResponse (kèm fc.id) lại cho Gemini" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FAF5FF;strokeColor=#9333EA;align=left;spacingLeft=10;fontSize=12;" vertex="1" parent="layer_agent">
+          <mxGeometry x="20" y="445" width="340" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="agent_return" value="📦 Đóng gói Output trả về app.py&#xa;{ answer, tool_logs, chart }" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#A78BFA;align=center;fontSize=12;fontStyle=1;" vertex="1" parent="layer_agent">
+          <mxGeometry x="20" y="575" width="340" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Layer 3: tools.py -->
+        <mxCell id="layer_data" value="🗄️ TẦNG DỮ LIỆU &amp; CÔNG CỤ (tools.py - DuckDB)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#10B981;fontStyle=1;fontSize=13;startSize=32;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="80" width="360" height="710" as="geometry" />
+        </mxCell>
+        <mxCell id="data_tools" value="🛠️ 5 Tools Phân Tích SQL&#xa;1. inspect_dataset() – Cấu trúc &amp; dòng mẫu&#xa;2. get_total_sales() – Tổng doanh thu/số lượng&#xa;3. get_top_rankings() – Top N Quốc gia/SP (Bar)&#xa;4. get_sales_by_month() – Theo tháng (Line)&#xa;5. get_sales_by_year() – Theo năm (Bar)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#34D399;align=left;spacingLeft=10;fontSize=12;" vertex="1" parent="layer_data">
+          <mxGeometry x="20" y="55" width="320" height="135" as="geometry" />
+        </mxCell>
+        <mxCell id="data_conn" value="🔌 _connect() (Singleton read_only)&#xa;Gọi init_database() &amp; tái sử dụng _SHARED_CONN" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D1FAE5;strokeColor=#059669;align=center;fontSize=12;fontStyle=1;" vertex="1" parent="layer_data">
+          <mxGeometry x="20" y="215" width="320" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="data_init" value="🚀 init_database() (ETL Tự động)&#xa;• _find_data_file(): tìm Excel/CSV mới nhất&#xa;• _needs_rebuild(): kiểm tra sales.meta.json&#xa;• Pandas làm sạch, Smart Imputation &amp; Downcast" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#34D399;align=left;spacingLeft=10;fontSize=12;" vertex="1" parent="layer_data">
+          <mxGeometry x="20" y="300" width="320" height="105" as="geometry" />
+        </mxCell>
+        <mxCell id="data_storage" value="💾 Lưu trữ Tối ưu (OLAP)&#xa;• Trung gian: sales.parquet (nén Snappy)&#xa;• Database: sales.duckdb (bảng sales + 3 Index)&#xa;• Metadata: sales.meta.json" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFBEB;strokeColor=#F59E0B;align=left;spacingLeft=10;fontSize=12;" vertex="1" parent="layer_data">
+          <mxGeometry x="20" y="430" width="320" height="105" as="geometry" />
+        </mxCell>
+        <mxCell id="data_excel" value="📄 Nguồn: data.xlsx / File CSV Upload" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=10;fillColor=#FEF3C7;strokeColor=#D97706;fontSize=12;fontStyle=1;" vertex="1" parent="layer_data">
+          <mxGeometry x="55" y="565" width="250" height="65" as="geometry" />
+        </mxCell>
+
+        <!-- Edges -->
+        <mxCell id="e1" value="1. Đặt câu hỏi" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#475569;" edge="1" parent="1" source="user" target="ui_chat">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" value="2. Gửi prompt + history" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#2563EB;" edge="1" parent="1" source="ui_chat" target="agent_init">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="580" y="405" />
+              <mxPoint x="580" y="185" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#7C3AED;" edge="1" parent="1" source="agent_init" target="agent_retry">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" value="3. Chọn model" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#7C3AED;" edge="1" parent="1" source="agent_retry" target="agent_gemini">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" value="4a. Có function_calls" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#9333EA;" edge="1" parent="1" source="agent_gemini" target="agent_tool_exec">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5_loop" value="4c. Lặp lại (≤6 bước)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;dashed=1;strokeColor=#9333EA;" edge="1" parent="1" source="agent_tool_exec" target="agent_gemini">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="630" y="575" />
+              <mxPoint x="630" y="445" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e6" value="4b. Gọi SQL Tool" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#059669;" edge="1" parent="1" source="agent_tool_exec" target="data_tools">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1030" y="575" />
+              <mxPoint x="1030" y="200" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e7" value="Kết quả JSON" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;dashed=1;strokeColor=#059669;" edge="1" parent="1" source="data_tools" target="agent_tool_exec">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1015" y="230" />
+              <mxPoint x="1015" y="595" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e8" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#059669;" edge="1" parent="1" source="data_tools" target="data_conn">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" value="Nếu DB mới / đổi file" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=1.5;dashed=1;strokeColor=#059669;" edge="1" parent="1" source="data_conn" target="data_init">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#D97706;" edge="1" parent="1" source="data_init" target="data_storage">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e11" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#D97706;" edge="1" parent="1" source="data_excel" target="data_storage">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e12" value="5. Không còn tool call" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#7C3AED;" edge="1" parent="1" source="agent_gemini" target="agent_return">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="990" y="445" />
+              <mxPoint x="990" y="685" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e13" value="6. Trả answer + logs + chart" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#2563EB;" edge="1" parent="1" source="agent_return" target="ui_output">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="590" y="685" />
+              <mxPoint x="590" y="540" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e14" value="7. Hiển thị UI" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeWidth=2;strokeColor=#475569;" edge="1" parent="1" source="ui_output" target="user">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="105" y="540" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

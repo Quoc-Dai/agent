@@ -3,3 +3,6 @@ google-genai
 streamlit
 plotly
 openpyxl
+duckdb
+pyarrow
+python-dotenv
